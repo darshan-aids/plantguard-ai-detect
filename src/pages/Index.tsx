@@ -5,6 +5,7 @@ import ImageUpload from "../components/ImageUpload";
 import DiagnosisResult from "../components/DiagnosisResult";
 import { Button } from "@/components/ui/button";
 import { Leaf, Shield, Camera, Sparkles } from "lucide-react";
+import { analyzeImage } from "../utils/plantAnalysis";
 
 export interface DiagnosisData {
   plantName: string;
@@ -29,75 +30,40 @@ const Index = () => {
     setDiagnosis(null);
   };
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
     if (!uploadedImage) return;
     
     setIsAnalyzing(true);
     
-    // Simulate AI analysis with realistic delay
-    setTimeout(() => {
-      // Mock diagnosis data - in real app this would come from your AI model
-      const mockDiagnoses: DiagnosisData[] = [
-        {
-          plantName: "Tomato",
-          disease: "Early Blight",
-          confidence: 94,
-          severity: 'moderate',
-          treatments: [
-            {
-              type: 'organic',
-              name: 'Neem Oil Spray',
-              description: 'Natural fungicidal properties help control fungal infections',
-              application: 'Spray on affected leaves every 7-10 days'
-            },
-            {
-              type: 'chemical',
-              name: 'Copper Fungicide',
-              description: 'Effective copper-based treatment for blight control',
-              application: 'Apply according to label instructions, typically every 14 days'
-            }
-          ]
-        },
-        {
-          plantName: "Rose",
-          disease: "Black Spot",
-          confidence: 89,
-          severity: 'mild',
-          treatments: [
-            {
-              type: 'organic',
-              name: 'Baking Soda Solution',
-              description: 'Mix 1 tsp baking soda with 1 quart water',
-              application: 'Spray weekly on affected areas'
-            },
-            {
-              type: 'chemical',
-              name: 'Tebuconazole',
-              description: 'Systemic fungicide for black spot control',
-              application: 'Apply every 2-3 weeks during growing season'
-            }
-          ]
-        },
-        {
-          plantName: "Healthy Plant",
-          disease: "No Disease Detected",
-          confidence: 96,
+    try {
+      // Use the enhanced analysis function
+      const result = await analyzeImage(uploadedImage);
+      setDiagnosis(result);
+    } catch (error) {
+      console.error('Analysis failed:', error);
+      // Fallback to basic analysis if enhanced fails
+      setTimeout(() => {
+        const fallbackDiagnosis: DiagnosisData = {
+          plantName: "Unknown Plant",
+          disease: "Analysis Error",
+          confidence: 0,
           severity: 'healthy',
           treatments: [
             {
               type: 'organic',
-              name: 'Preventive Care',
-              description: 'Continue regular watering and monitoring',
-              application: 'Maintain consistent care routine'
+              name: 'Manual Inspection',
+              description: 'Please try uploading a clearer image or consult a plant expert',
+              application: 'Take a well-lit photo focusing on the affected area'
             }
           ]
-        }
-      ];
-      
-      const randomDiagnosis = mockDiagnoses[Math.floor(Math.random() * mockDiagnoses.length)];
-      setDiagnosis(randomDiagnosis);
-      setIsAnalyzing(false);
-    }, 3000);
+        };
+        setDiagnosis(fallbackDiagnosis);
+        setIsAnalyzing(false);
+      }, 1000);
+      return;
+    }
+    
+    setIsAnalyzing(false);
   };
 
   const handleReset = () => {
@@ -184,7 +150,7 @@ const Index = () => {
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-12 text-center">
               <div className="animate-spin w-16 h-16 border-4 border-green-200 border-t-green-500 rounded-full mx-auto mb-6"></div>
               <h3 className="text-2xl font-semibold text-gray-800 mb-2">Analyzing Your Plant...</h3>
-              <p className="text-gray-600">Our AI is examining the image for disease indicators</p>
+              <p className="text-gray-600">Our enhanced AI is examining the image for disease indicators</p>
             </div>
           )}
 
