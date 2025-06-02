@@ -1,5 +1,5 @@
 
-import { Leaf, Flask, Clock, Droplets } from "lucide-react";
+import { Leaf, Beaker, Clock, Droplets } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Treatment {
@@ -27,7 +27,7 @@ const TreatmentCard = ({ treatment }: TreatmentCardProps) => {
           {isOrganic ? (
             <Leaf className={`w-6 h-6 ${isOrganic ? 'text-green-600' : 'text-blue-600'}`} />
           ) : (
-            <Flask className={`w-6 h-6 ${isOrganic ? 'text-green-600' : 'text-blue-600'}`} />
+            <Beaker className={`w-6 h-6 ${isOrganic ? 'text-green-600' : 'text-blue-600'}`} />
           )}
         </div>
         
