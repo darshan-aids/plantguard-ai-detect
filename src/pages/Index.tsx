@@ -4,8 +4,9 @@ import Header from "../components/Header";
 import ImageUpload from "../components/ImageUpload";
 import DiagnosisResult from "../components/DiagnosisResult";
 import { Button } from "@/components/ui/button";
-import { Leaf, Shield, Camera, Sparkles } from "lucide-react";
+import { Leaf, Shield, Camera, Sparkles, AlertCircle } from "lucide-react";
 import { analyzeImage } from "../utils/plantAnalysis";
+import { useToast } from "@/hooks/use-toast";
 
 export interface DiagnosisData {
   plantName: string;
@@ -24,6 +25,7 @@ const Index = () => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [diagnosis, setDiagnosis] = useState<DiagnosisData | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const { toast } = useToast();
 
   const handleImageUpload = (imageUrl: string) => {
     setUploadedImage(imageUrl);
@@ -36,31 +38,26 @@ const Index = () => {
     setIsAnalyzing(true);
     
     try {
-      // Use the enhanced analysis function
       const result = await analyzeImage(uploadedImage);
       setDiagnosis(result);
+      
+      toast({
+        title: "Analysis Complete",
+        description: `Detected: ${result.plantName} - ${result.disease}`,
+      });
     } catch (error) {
       console.error('Analysis failed:', error);
-      // Fallback to basic analysis if enhanced fails
-      setTimeout(() => {
-        const fallbackDiagnosis: DiagnosisData = {
-          plantName: "Unknown Plant",
-          disease: "Analysis Error",
-          confidence: 0,
-          severity: 'healthy',
-          treatments: [
-            {
-              type: 'organic',
-              name: 'Manual Inspection',
-              description: 'Please try uploading a clearer image or consult a plant expert',
-              application: 'Take a well-lit photo focusing on the affected area'
-            }
-          ]
-        };
-        setDiagnosis(fallbackDiagnosis);
-        setIsAnalyzing(false);
-      }, 1000);
-      return;
+      
+      toast({
+        variant: "destructive",
+        title: "Analysis Failed",
+        description: error.message,
+      });
+      
+      // Reset the image if it's not a plant
+      if (error.message.includes('plant leaf')) {
+        setUploadedImage(null);
+      }
     }
     
     setIsAnalyzing(false);
@@ -88,7 +85,7 @@ const Index = () => {
             </h1>
           </div>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
-            AI-powered plant disease detection. Simply upload a photo of your plant's leaf to get instant diagnosis and treatment recommendations.
+            AI-powered plant disease detection using Google's Gemini AI. Simply upload a photo of your plant's leaf to get instant, accurate diagnosis and treatment recommendations.
           </p>
           
           {/* Feature highlights */}
@@ -100,13 +97,13 @@ const Index = () => {
             </div>
             <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
               <Sparkles className="w-12 h-12 text-blue-500 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">AI Analysis</h3>
-              <p className="text-gray-600 text-sm">Advanced AI identifies diseases instantly</p>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">Gemini AI Analysis</h3>
+              <p className="text-gray-600 text-sm">Google's advanced AI identifies diseases accurately</p>
             </div>
             <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
               <Shield className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Treatment Guide</h3>
-              <p className="text-gray-600 text-sm">Get organic and chemical treatment options</p>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">Expert Treatment</h3>
+              <p className="text-gray-600 text-sm">Get professional organic and chemical treatment options</p>
             </div>
           </div>
         </div>
@@ -131,7 +128,7 @@ const Index = () => {
                   className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-8 py-3 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                   <Sparkles className="w-5 h-5 mr-2" />
-                  Analyze Plant Health
+                  Analyze with Gemini AI
                 </Button>
                 <div>
                   <Button 
@@ -150,7 +147,11 @@ const Index = () => {
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-12 text-center">
               <div className="animate-spin w-16 h-16 border-4 border-green-200 border-t-green-500 rounded-full mx-auto mb-6"></div>
               <h3 className="text-2xl font-semibold text-gray-800 mb-2">Analyzing Your Plant...</h3>
-              <p className="text-gray-600">Our enhanced AI is examining the image for disease indicators</p>
+              <p className="text-gray-600">Google's Gemini AI is examining the image for disease indicators and plant identification</p>
+              <div className="mt-4 flex items-center justify-center gap-2 text-sm text-gray-500">
+                <AlertCircle className="w-4 h-4" />
+                <span>Please ensure the image shows a clear plant leaf</span>
+              </div>
             </div>
           )}
 
