@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Mail, Lock, User, Chrome } from "lucide-react";
+import { Mail, Lock, User } from "lucide-react";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -103,27 +103,6 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
     setLoading(false);
   };
 
-  const handleGoogleAuth = async () => {
-    setLoading(true);
-    
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/`,
-      },
-    });
-
-    if (error) {
-      toast({
-        title: "Google Sign In Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-    
-    setLoading(false);
-  };
-
   const resetForm = () => {
     setEmail("");
     setPassword("");
@@ -145,25 +124,6 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         </DialogHeader>
 
         <div className="space-y-6">
-          <Button
-            onClick={handleGoogleAuth}
-            disabled={loading}
-            variant="outline"
-            className="w-full h-12 text-base border-2 hover:bg-gray-50"
-          >
-            <Chrome className="w-5 h-5 mr-3" />
-            Continue with Google
-          </Button>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-gray-500">Or continue with email</span>
-            </div>
-          </div>
-
           <form onSubmit={handleEmailAuth} className="space-y-4">
             {isSignUp && (
               <div className="space-y-2">
