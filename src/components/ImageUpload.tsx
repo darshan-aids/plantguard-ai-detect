@@ -1,7 +1,9 @@
 
 import { useRef, useState } from "react";
-import { Camera, Upload, Image as ImageIcon } from "lucide-react";
+import { Camera, Upload, Image as ImageIcon, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { validateImageFile } from "@/utils/imageValidation";
+import { useToast } from "@/hooks/use-toast";
 
 interface ImageUploadProps {
   onImageUpload: (imageUrl: string) => void;
@@ -10,15 +12,38 @@ interface ImageUploadProps {
 const ImageUpload = ({ onImageUpload }: ImageUploadProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const { toast } = useToast();
+
+  const processFile = (file: File) => {
+    const validation = validateImageFile(file);
+    
+    if (!validation.isValid) {
+      toast({
+        variant: "destructive",
+        title: "Invalid File",
+        description: validation.error,
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      onImageUpload(e.target?.result as string);
+    };
+    reader.onerror = () => {
+      toast({
+        variant: "destructive",
+        title: "File Read Error",
+        description: "Failed to read the image file. Please try again.",
+      });
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        onImageUpload(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+      processFile(file);
     }
   };
 
@@ -39,11 +64,7 @@ const ImageUpload = ({ onImageUpload }: ImageUploadProps) => {
     const files = e.dataTransfer.files;
     if (files.length > 0) {
       const file = files[0];
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        onImageUpload(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+      processFile(file);
     }
   };
 
@@ -99,16 +120,26 @@ const ImageUpload = ({ onImageUpload }: ImageUploadProps) => {
             </Button>
           </div>
 
-          <p className="text-sm text-gray-500">
-            Supported formats: JPG, PNG, WebP (Max 10MB)
-          </p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md">
+            <div className="flex items-start gap-2">
+              <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div className="text-sm">
+                <p className="text-blue-800 font-medium mb-1">File Requirements:</p>
+                <ul className="text-blue-700 space-y-1">
+                  <li>• Formats: JPG, PNG, WebP</li>
+                  <li>• Max size: 10MB</li>
+                  <li>• Clear plant leaf images only</li>
+                </ul>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/jpg,image/png,image/webp"
         onChange={handleFileChange}
         className="hidden"
         capture="environment"
